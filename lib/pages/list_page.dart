@@ -17,8 +17,9 @@ class _ListPageState extends State<ListPage> {
 
   //we will need some variables
   bool playing = true; // at the begining we are not playing any song
-  // IconData playBtn = Icons.play_arrow; // the main state of the play button icon
-
+  IconData playBtn = Icons.play_arrow; // the main state of the play button icon
+  IconData pauseBtn = Icons.play_arrow; // the main state of the play button icon
+  
   //Now let's start by creating our music player
   //first let's declare some object
   AudioPlayer _player;
@@ -107,8 +108,8 @@ class _ListPageState extends State<ListPage> {
                       CustomButtonWidget(
                           child: Icon(
                               _list[index].id == _playId
-                                  ? Icons.play_arrow
-                                  : Icons.play_arrow,
+                                  ? pauseBtn
+                                  : playBtn,
                               color: _list[index].id == _playId
                                   ? Colors.white
                                   : AppColors.styleColor),
@@ -120,14 +121,17 @@ class _ListPageState extends State<ListPage> {
                               cache.play('${_list[index].songPath}');
                               setState(() {
                                 _playId = _list[index].id;
-
                                 playing = false;
+                                playBtn=Icons.play_arrow;
+                                pauseBtn=Icons.pause;
                               });
                             } else if (!playing) {
                               if (_list[index].id == _playId) {
                                 _player.pause();
                                 setState(() {
-                                  playing = true;
+                                   playing = true;
+                                   playBtn=Icons.play_arrow;
+                                   pauseBtn=Icons.play_arrow;
                                 });
                               } else {
                                 cache.play('${_list[index].songPath}');
