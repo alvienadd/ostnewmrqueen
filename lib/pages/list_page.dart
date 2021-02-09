@@ -16,7 +16,7 @@ class _ListPageState extends State<ListPage> {
   int _playId;
 
   //we will need some variables
-  bool playing = false; // at the begining we are not playing any song
+  bool playing = true; // at the begining we are not playing any song
   // IconData playBtn = Icons.play_arrow; // the main state of the play button icon
 
   //Now let's start by creating our music player
@@ -26,7 +26,7 @@ class _ListPageState extends State<ListPage> {
 
   Duration position = new Duration();
   Duration musicLength = new Duration();
-  
+
   @override
   void initState() {
     // TODO: implement initState
@@ -61,18 +61,18 @@ class _ListPageState extends State<ListPage> {
                   CustomButtonWidget(
                     child: Icon(Icons.favorite, color: AppColors.styleColor),
                     size: 50,
-                    onTap: (){},
+                    onTap: () {},
                   ),
                   CustomButtonWidget(
                     image: "assets/logo.jpg",
                     size: 150,
                     borderWidth: 5,
-                    onTap: (){},
+                    onTap: () {},
                   ),
                   CustomButtonWidget(
                     child: Icon(Icons.menu, color: AppColors.styleColor),
                     size: 50,
-                    onTap: (){},
+                    onTap: () {},
                   ),
                 ]),
           ),
@@ -83,11 +83,10 @@ class _ListPageState extends State<ListPage> {
               itemBuilder: (context, index) {
                 return Container(
                   decoration: BoxDecoration(
-                    color:_list[index].id == _playId?AppColors.activeColor:AppColors.mainColor,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(20)
-                    )
-                  ),
+                      color: _list[index].id == _playId
+                          ? AppColors.activeColor
+                          : AppColors.mainColor,
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
                   padding: EdgeInsets.all(16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,20 +105,38 @@ class _ListPageState extends State<ListPage> {
                                     fontSize: 16))
                           ]),
                       CustomButtonWidget(
-                        child:
-                            Icon(_list[index].id==_playId?Icons.pause:Icons.play_arrow, color:_list[index].id==_playId?Colors.white:AppColors.styleColor),
-                        size: 50,
-                        isActive: _list[index].id == _playId,
-                        onTap: (){ 
-                          if (!playing) {
-                            //now let's play the song
-                            cache.play('${_list[index].songPath}');
-                            setState((){
-                              _playId=_list[index].id;
-                            });
-                          }
-                        },
-                      )
+                          child: Icon(
+                              _list[index].id == _playId
+                                  ? Icons.play_arrow
+                                  : Icons.play_arrow,
+                              color: _list[index].id == _playId
+                                  ? Colors.white
+                                  : AppColors.styleColor),
+                          size: 50,
+                          isActive: _list[index].id == _playId,
+                          onTap: () {
+                            if (playing) {
+                              //now let's play the song
+                              cache.play('${_list[index].songPath}');
+                              setState(() {
+                                _playId = _list[index].id;
+
+                                playing = false;
+                              });
+                            } else if (!playing) {
+                              if (_list[index].id == _playId) {
+                                _player.pause();
+                                setState(() {
+                                  playing = true;
+                                });
+                              } else {
+                                cache.play('${_list[index].songPath}');
+                                setState(() {
+                                  _playId = _list[index].id;
+                                });
+                              }
+                            }
+                          })
                     ],
                   ),
                 );
