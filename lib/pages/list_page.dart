@@ -28,6 +28,29 @@ class _ListPageState extends State<ListPage> {
   Duration position = new Duration();
   Duration musicLength = new Duration();
 
+
+  //we will create a custom slider
+
+  Widget slider() {
+    return Container(
+      width: 300.0,
+      child: Slider.adaptive(
+          activeColor: Colors.blue[800],
+          inactiveColor: Colors.grey[350],
+          value: position.inSeconds.toDouble(),
+          max: musicLength.inSeconds.toDouble(),
+          onChanged: (value) {
+            seekToSec(value.toInt());
+          }),
+    );
+  }
+
+  //let's create the seek function that will allow us to go to a certain position of the music
+  void seekToSec(int sec) {
+    Duration newPos = Duration(seconds: sec);
+    _player.seek(newPos);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -38,6 +61,22 @@ class _ListPageState extends State<ListPage> {
     cache = AudioCache(fixedPlayer: _player);
 
     super.initState();
+
+     //now let's handle the audioplayer time
+
+    //this function will allow you to get the music duration
+    _player.durationHandler = (d) {
+      setState(() {
+        musicLength = d;
+      });
+    };
+
+    //this function will allow us to move the cursor of the slider while we are playing the song
+    _player.positionHandler = (p) {
+      setState(() {
+        position = p;
+      });
+    };
   }
 
   @override
@@ -77,6 +116,7 @@ class _ListPageState extends State<ListPage> {
                   ),
                 ]),
           ),
+          slider(),
           Expanded(
             child: ListView.builder(
               physics: BouncingScrollPhysics(),
