@@ -4,13 +4,18 @@ import 'package:ostnewmrqueen/models/music_model.dart';
 import 'package:ostnewmrqueen/widgets/custom_button_widget.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
+// import 'package:startapp/startapp.dart';
+
+import 'package:applovin/applovin.dart';
+import 'package:applovin/banner.dart';
 
 class ListPage extends StatefulWidget {
   @override
   _ListPageState createState() => _ListPageState();
 }
 
-class _ListPageState extends State<ListPage> {
+class _ListPageState extends State<ListPage>
+    with SingleTickerProviderStateMixin {
   List<MusicModel> _list;
 
   int _playId;
@@ -18,8 +23,9 @@ class _ListPageState extends State<ListPage> {
   //we will need some variables
   bool playing = true; // at the begining we are not playing any song
   IconData playBtn = Icons.play_arrow; // the main state of the play button icon
-  IconData pauseBtn = Icons.play_arrow; // the main state of the play button icon
-  
+  IconData pauseBtn =
+      Icons.play_arrow; // the main state of the play button icon
+
   //Now let's start by creating our music player
   //first let's declare some object
   AudioPlayer _player;
@@ -27,7 +33,6 @@ class _ListPageState extends State<ListPage> {
 
   Duration position = new Duration();
   Duration musicLength = new Duration();
-
 
   //we will create a custom slider
 
@@ -51,8 +56,14 @@ class _ListPageState extends State<ListPage> {
     _player.seek(newPos);
   }
 
+  //For Animation Rotate
+  AnimationController _controller;
+
   @override
   void initState() {
+    //Implement Applovin Ads
+     AppLovin.init();
+
     // TODO: implement initState
     _playId = 1;
     _list = MusicModel.list;
@@ -62,7 +73,7 @@ class _ListPageState extends State<ListPage> {
 
     super.initState();
 
-     //now let's handle the audioplayer time
+    //now let's handle the audioplayer time
 
     //this function will allow you to get the music duration
     _player.durationHandler = (d) {
@@ -77,7 +88,24 @@ class _ListPageState extends State<ListPage> {
         position = p;
       });
     };
+
+    //For Animation Image
+    _controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 2))
+          ..repeat();
+
+     AppLovin.requestInterstitial(
+                  (AppLovinAdListener event) => listener(event, true),
+                  interstitial: true);
+
   }
+
+   listener(AppLovinAdListener event, bool isInter) {
+    print(event);
+    if (event == AppLovinAdListener.adReceived) {
+      AppLovin.showInterstitial(interstitial: isInter);
+    }
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -103,11 +131,20 @@ class _ListPageState extends State<ListPage> {
                     size: 50,
                     onTap: () {},
                   ),
-                  CustomButtonWidget(
-                    image: "assets/logo.jpg",
-                    size: 150,
-                    borderWidth: 5,
-                    onTap: () {},
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (_, child) {
+                      return Transform.rotate(
+                        angle: _controller.value * 2 * 3.14,
+                        child: child,
+                      );
+                    },
+                    child: CustomButtonWidget(
+                      image: "assets/queen.png",
+                      size: 150,
+                      borderWidth: 5,
+                      onTap: () {},
+                    ),
                   ),
                   CustomButtonWidget(
                     child: Icon(Icons.menu, color: AppColors.styleColor),
@@ -117,6 +154,11 @@ class _ListPageState extends State<ListPage> {
                 ]),
           ),
           slider(),
+        //  RaisedButton(
+        //             child: Text('Show interstitial ad'),
+        //             onPressed: () async {
+        //               await StartApp.showInterstitialAd();
+        //             }),      
           Expanded(
             child: ListView.builder(
               physics: BouncingScrollPhysics(),
@@ -147,9 +189,7 @@ class _ListPageState extends State<ListPage> {
                           ]),
                       CustomButtonWidget(
                           child: Icon(
-                              _list[index].id == _playId
-                                  ? pauseBtn
-                                  : playBtn,
+                              _list[index].id == _playId ? pauseBtn : playBtn,
                               color: _list[index].id == _playId
                                   ? Colors.white
                                   : AppColors.styleColor),
@@ -162,16 +202,16 @@ class _ListPageState extends State<ListPage> {
                               setState(() {
                                 _playId = _list[index].id;
                                 playing = false;
-                                playBtn=Icons.play_arrow;
-                                pauseBtn=Icons.pause;
+                                playBtn = Icons.play_arrow;
+                                pauseBtn = Icons.pause;
                               });
                             } else if (!playing) {
                               if (_list[index].id == _playId) {
                                 _player.pause();
                                 setState(() {
-                                   playing = true;
-                                   playBtn=Icons.play_arrow;
-                                   pauseBtn=Icons.play_arrow;
+                                  playing = true;
+                                  playBtn = Icons.play_arrow;
+                                  pauseBtn = Icons.play_arrow;
                                 });
                               } else {
                                 cache.play('${_list[index].songPath}');
@@ -188,17 +228,19 @@ class _ListPageState extends State<ListPage> {
             ),
           )
         ]),
+         
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            height: 50,
+            height: 20,
             decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [
               AppColors.mainColor.withAlpha(0),
               AppColors.mainColor
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
           ),
-        )
+        ),
+       
       ]),
     );
   }
